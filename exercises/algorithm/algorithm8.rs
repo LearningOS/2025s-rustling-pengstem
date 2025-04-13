@@ -1,8 +1,7 @@
 /*
 	queue
-	This question requires you to use queues to implement the functionality of the stac
+	This question requires you to use queues to implement the functionality of the stack
 */
-// I AM NOT DONE
 
 #[derive(Debug)]
 pub struct Queue<T> {
@@ -52,30 +51,63 @@ impl<T> Default for Queue<T> {
     }
 }
 
-pub struct myStack<T>
+pub struct MyStack<T>
 {
-	//TODO
-	q1:Queue<T>,
-	q2:Queue<T>
+    // q1 is the main queue holding the stack elements
+    q1: Queue<T>,
+    // q2 is used as temporary storage during pop
+    q2: Queue<T>
 }
-impl<T> myStack<T> {
+
+impl<T> MyStack<T> {
     pub fn new() -> Self {
         Self {
-			//TODO
-			q1:Queue::<T>::new(),
-			q2:Queue::<T>::new()
+            q1: Queue::<T>::new(),
+            q2: Queue::<T>::new()
         }
     }
+
+    // Push element onto the top of the stack
     pub fn push(&mut self, elem: T) {
-        //TODO
+        // Always enqueue to q1
+        self.q1.enqueue(elem);
     }
-    pub fn pop(&mut self) -> Result<T, &str> {
-        //TODO
-		Err("Stack is empty")
+
+    // Remove the element from the top of the stack and return it
+    pub fn pop(&mut self) -> Result<T, &'static str> {
+        // Check if q1 is empty initially
+        if self.q1.is_empty() {
+            return Err("Stack is empty");
+        }
+
+        // Move all elements except the last one from q1 to q2
+        while self.q1.size() > 1 {
+            // Dequeue from q1 and enqueue to q2.
+            // Using if let to handle the Result without borrowing issues
+            if let Ok(val) = self.q1.dequeue() {
+                self.q2.enqueue(val);
+            } else {
+                // This should not happen based on the size check
+                unreachable!();
+            }
+        }
+
+        // Pop the last element from q1 (which is the top of our stack)
+        let result = match self.q1.dequeue() {
+            Ok(val) => Ok(val),
+            Err(_) => Err("Stack is empty") // Using static lifetime for error string
+        };
+
+        // Swap q1 and q2 after we're done with q1
+        std::mem::swap(&mut self.q1, &mut self.q2);
+        
+        result
     }
+
+    // Check if the stack is empty
     pub fn is_empty(&self) -> bool {
-		//TODO
-        true
+        // The stack is empty if the main queue (q1) is empty.
+        self.q1.is_empty()
     }
 }
 
@@ -85,7 +117,7 @@ mod tests {
 	
 	#[test]
 	fn test_queue(){
-		let mut s = myStack::<i32>::new();
+		let mut s = MyStack::<i32>::new();
 		assert_eq!(s.pop(), Err("Stack is empty"));
         s.push(1);
         s.push(2);

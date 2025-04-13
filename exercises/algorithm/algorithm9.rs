@@ -1,9 +1,3 @@
-/*
-	heap
-	This question requires you to implement a binary heap function
-*/
-// I AM NOT DONE
-
 use std::cmp::Ord;
 use std::default::Default;
 
@@ -37,7 +31,24 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        // Add the value to the end of the heap
+        self.items.push(value);
+        self.count += 1;
+        
+        // Bubble up to maintain heap property
+        let mut idx = self.count;
+        while idx > 1 {
+            let parent_idx = self.parent_idx(idx);
+            
+            // If the parent is "better" according to the comparator, we're done
+            if (self.comparator)(&self.items[parent_idx], &self.items[idx]) {
+                break;
+            }
+            
+            // Otherwise, swap with parent and continue bubbling up
+            self.items.swap(parent_idx, idx);
+            idx = parent_idx;
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +68,20 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let left_idx = self.left_child_idx(idx);
+        let right_idx = self.right_child_idx(idx);
+        
+        // If right child doesn't exist, return left child
+        if right_idx > self.count {
+            return left_idx;
+        }
+        
+        // Compare children using the comparator function
+        if (self.comparator)(&self.items[left_idx], &self.items[right_idx]) {
+            left_idx
+        } else {
+            right_idx
+        }
     }
 }
 
@@ -84,8 +107,38 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+        
+        // Get the last item first
+        let last_item = self.items.pop().unwrap();
+        self.count -= 1;
+        
+        // If the heap is now empty, return the last item we popped
+        if self.count == 0 {
+            return Some(last_item);
+        }
+        
+        // Otherwise, take the root and replace it with the last item
+        let ret = std::mem::replace(&mut self.items[1], last_item);
+        
+        // Bubble down the new root to maintain heap property
+        let mut idx = 1;
+        while self.children_present(idx) {
+            let child_idx = self.smallest_child_idx(idx);
+            
+            // If the current node is already "better" than its best child, we're done
+            if (self.comparator)(&self.items[idx], &self.items[child_idx]) {
+                break;
+            }
+            
+            // Otherwise, swap with the best child and continue bubbling down
+            self.items.swap(idx, child_idx);
+            idx = child_idx;
+        }
+        
+        Some(ret)
     }
 }
 

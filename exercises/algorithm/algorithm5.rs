@@ -2,13 +2,11 @@
 	bfs
 	This problem requires you to implement a basic BFS algorithm
 */
-
-//I AM NOT DONE
 use std::collections::VecDeque;
 
 // Define a graph
 struct Graph {
-    adj: Vec<Vec<usize>>, 
+    adj: Vec<Vec<usize>>,
 }
 
 impl Graph {
@@ -21,16 +19,27 @@ impl Graph {
 
     // Add an edge to the graph
     fn add_edge(&mut self, src: usize, dest: usize) {
-        self.adj[src].push(dest); 
-        self.adj[dest].push(src); 
+        self.adj[src].push(dest);
+        self.adj[dest].push(src);
     }
 
     // Perform a breadth-first search on the graph, return the order of visited nodes
     fn bfs_with_return(&self, start: usize) -> Vec<usize> {
-        
-		//TODO
-
         let mut visit_order = vec![];
+        visit_order.push(start);
+        let mut to_visit = self.adj[start].clone();
+        loop {
+            if to_visit.is_empty() {
+                break;
+            }
+            let visit_node = to_visit.remove(0);
+            visit_order.push(visit_node);
+            for node in &self.adj[visit_node] {
+                if !visit_order.contains(node) && !to_visit.contains(node) {
+                    to_visit.push(*node);
+                }
+            }
+        }
         visit_order
     }
 }
@@ -63,7 +72,7 @@ mod tests {
 
         let visited_order = graph.bfs_with_return(2);
         assert_eq!(visited_order, vec![2, 1, 0]);
-    }
+    }   
 
     #[test]
     fn test_bfs_with_cycle() {

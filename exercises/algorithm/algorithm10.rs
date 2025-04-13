@@ -1,9 +1,3 @@
-/*
-	graph
-	This problem requires you to implement a basic graph functio
-*/
-// I AM NOT DONE
-
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 #[derive(Debug, Clone)]
@@ -29,7 +23,28 @@ impl Graph for UndirectedGraph {
         &self.adjacency_table
     }
     fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        //TODO
+        let (from, to, weight) = edge;
+        
+        // Add nodes if they don't exist
+        self.add_node(from);
+        self.add_node(to);
+        
+        // Add edge in both directions (since it's undirected)
+        // First direction: from -> to
+        let from_neighbors = self.adjacency_table_mutable().get_mut(from).unwrap();
+        // Check if the edge already exists
+        if !from_neighbors.iter().any(|(node, _)| node == to) {
+            from_neighbors.push((to.to_string(), weight));
+        }
+        
+        // Second direction: to -> from (only if nodes are different)
+        if from != to {
+            let to_neighbors = self.adjacency_table_mutable().get_mut(to).unwrap();
+            // Check if the edge already exists
+            if !to_neighbors.iter().any(|(node, _)| node == from) {
+                to_neighbors.push((from.to_string(), weight));
+            }
+        }
     }
 }
 pub trait Graph {
@@ -37,12 +52,16 @@ pub trait Graph {
     fn adjacency_table_mutable(&mut self) -> &mut HashMap<String, Vec<(String, i32)>>;
     fn adjacency_table(&self) -> &HashMap<String, Vec<(String, i32)>>;
     fn add_node(&mut self, node: &str) -> bool {
-        //TODO
-		true
+        if self.contains(node) {
+            // Node already exists
+            return false;
+        }
+        
+        // Add the node with an empty neighbors list
+        self.adjacency_table_mutable().insert(node.to_string(), Vec::new());
+        true
     }
-    fn add_edge(&mut self, edge: (&str, &str, i32)) {
-        //TODO
-    }
+    fn add_edge(&mut self, edge: (&str, &str, i32));
     fn contains(&self, node: &str) -> bool {
         self.adjacency_table().get(node).is_some()
     }
